@@ -13,6 +13,9 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.net.InetSocketAddress;
 
@@ -26,6 +29,10 @@ class UdpChannelInitializer extends ChannelInitializer<DatagramChannel> {
     private NotificationManager mNotifyMgr;
 
     private NotificationCompat.Builder mBuilder;
+
+    private static final String KEY = "master123";
+
+    private OkHttpClient client = new OkHttpClient();
 
     private int id = 0;
 
@@ -51,6 +58,15 @@ class UdpChannelInitializer extends ChannelInitializer<DatagramChannel> {
             @Override
             public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
+                ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(KEY, CharsetUtil.UTF_8)
+                        , new InetSocketAddress("192.168.33.212", 55055)));
+
+                Request request = new Request.Builder()
+                        .url("http://192.168.33.212:9009/pull/" + KEY).build();
+
+                Response response = client.newCall(request).execute();
+
+                System.out.println("response" + response.body().string());
             }
 
             @Override
@@ -62,7 +78,7 @@ class UdpChannelInitializer extends ChannelInitializer<DatagramChannel> {
             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                 String body = ((DatagramPacket) msg).copy().content().toString(CharsetUtil.UTF_8);
 
-                if(body.startsWith("##")){
+                if (body.startsWith("##")) {
                     System.out.println(body);
                     mBuilder.setContentTitle("标题")
                             .setContentText(body.substring(2))
@@ -88,7 +104,7 @@ class UdpChannelInitializer extends ChannelInitializer<DatagramChannel> {
                         // 超时关闭channel
                         ctx.close();
                     } else if (event.state().equals(IdleState.WRITER_IDLE)) {
-                        ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer("master123", CharsetUtil.UTF_8)
+                        ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(KEY, CharsetUtil.UTF_8)
                                 , new InetSocketAddress("192.168.33.212", 55055)));
                     } else if (event.state().equals(IdleState.ALL_IDLE)) {
                         System.out.println("ALL_IDLE");

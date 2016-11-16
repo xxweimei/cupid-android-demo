@@ -24,4 +24,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.+'
     compile 'io.netty:netty-all:4.1.6.Final'
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
 }
