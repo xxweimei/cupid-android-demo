@@ -25,6 +25,6 @@ public class MainActivity extends AppCompatActivity {
         b.group(group).channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(new UdpChannelInitializer(mNotifyMgr, mBuilder));
-        b.connect("192.168.33.212", 55055);
+        b.connect(Contants.UDP_SERVER_IP, Contants.UDP_SERVER_PORT);
     }
 }
